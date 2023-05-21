@@ -1,58 +1,85 @@
-export const getProducts = async (req, res) => {
-  const products = await prisma.product.findMany();
-  res.json(products);
+import {
+  getAllProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "../services/products.service.js";
+
+export const getProductsController = async (req, res) => {
+  try {
+    const products = await getAllProducts();
+
+    if (!products.length)
+      return res.status(404).json({ error: "No products found" });
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
-export const getProductById = async (req, res) => {
-  const { id } = req.params;
-  const productFound = await prisma.product.findFirst({
-    where: {
-      id: parseInt(id),
-    },
-    include: {
-      category: true,
-    },
-  });
+export const getProductByIdController = async (req, res) => {
+  try {
+    const productFound = await getProductById(req.params.id);
 
-  if (!productFound)
-    return res.status(404).json({ error: "Product not found" });
+    if (!productFound)
+      return res.status(404).json({ error: "Product not found" });
 
-  return res.json(productFound);
+    return res.json(productFound);
+  } catch (error) {
+    if (error.message === "Invalid product ID") {
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
 
-export const createProduct = async (req, res) => {
-  const newProduct = await prisma.product.create({
-    data: req.body,
-  });
+export const createProductController = async (req, res) => {
+  try {
+    const newProduct = await createProduct(req.body);
 
-  return res.json(newProduct);
+    return res.status(201).json(newProduct);
+  } catch (error) {
+    if (error.message === "Missing required fields") {
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
 
-export const updateProduct = async (req, res) => {
-  const { id } = req.params;
-  const productUpdated = await prisma.product.update({
-    where: {
-      id: parseInt(id),
-    },
-    data: req.body,
-  });
+export const updateProductController = async (req, res) => {
+  try {
+    const productUpdated = await updateProduct(req.params.id, req.body);
 
-  if (!productUpdated)
-    return res.status(404).json({ error: "Product not found" });
+    if (!productUpdated)
+      return res.status(404).json({ error: "Product not found" });
 
-  return res.json(productUpdated);
+    return res.status(201).json(productUpdated);
+  } catch (error) {
+    if (error.message === "Invalid product ID") {
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
 
-export const deleteProduct = async (req, res) => {
-  const { id } = req.params;
-  const productDeleted = await prisma.product.delete({
-    where: {
-      id: parseInt(id),
-    },
-  });
+export const deleteProductController = async (req, res) => {
+  try {
+    const productDeleted = await deleteProduct(req.params.id);
 
-  if (!productDeleted)
-    return res.status(404).json({ error: "Product not found" });
+    if (!productDeleted)
+      return res.status(404).json({ error: "Product not found" });
 
-  return res.json(productDeleted);
+    return res.json(productDeleted);
+  } catch (error) {
+    return res.status(500).json({ error: "Error deleting product" });
+  }
 };
