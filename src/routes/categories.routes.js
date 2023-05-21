@@ -1,16 +1,8 @@
 import { Router } from "express";
-import { prisma } from "../db.js";
+import { getCategories } from "../controllers/categories.controller.js";
 
 const router = Router();
 
-router.get("/categories", async (req, res) => {
-  const categories = await prisma.category.findMany({
-    include: {
-      products: true,
-    },
-  });
-
-  return res.json(categories);
-});
+router.get("/categories", getCategories);
 
 export default router;
