@@ -13,7 +13,7 @@ import {
 
 const router = Router();
 
-// TODO add middlewares (validation and error handling)
+// TODO - add middleware for error handling
 router.get("/products", getProductsController);
 router.get("/products/:id", getProductByIdController);
 router.post("/products", validateCreateProduct, createProductController);
